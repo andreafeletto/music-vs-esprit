@@ -18,9 +18,9 @@ pdf:
 		--output $(BUILDDIR)/thesis.pdf \
 		--pdf-engine=xelatex
 
-clean:
+precommit:
 	jupyter nbconvert \
 		--ClearOutputPreprocessor.enabled=True \
 		--inplace *.ipynb
 
-.PHONY: all options pdf clean
+.PHONY: all options pdf precommit
