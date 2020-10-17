@@ -4,7 +4,7 @@ author: "Andrea Feletto"
 lang: "it-IT"
 toc: true
 bibliography: "thesis.bib"
-citation-style: "digital-signal-processing.csl"
+citation-style: "dsp.csl"
 link-citations: true
 linestretch: 1.25
 header-includes:
@@ -14,39 +14,52 @@ header-includes:
 \newpage
 # Richiami di Algebra Lineare e Statistica
 
-La **speranza matematica** $\mathbb{E}[X]$ di una *variabile aleatoria* discreta $X$ associata ad una *funzione di probabilità* $p_X(x)$ e ad uno *spazio campionario* $\Omega$, è definita [@intro-probability] come la somma dei valori che $X$ può assumere, ponderati per la probabilità che si manifestino:
-$$
-\mathbb{E}[X] = \sum_{x \in \Omega} x \, p_X(x)
-$$
-
 Data una trasformazione lineare $A$, il vettore non nullo $x_i$ è [@finite-dim-vecspace] **autovettore** di $A$ se e solo se esiste uno scalare $\lambda_i$, detto **autovalore** di $A$ corrispondente a $x_i$, tale che sia rispettata l'equazione:
 $$
 A x_i = \lambda_i x_i
 $$
 La trasformazione $A$, quando applicata ad un suo autovettore, ha quindi lo stesso comportamento dell'autovalore corrispondente.
 
-Data una successione di $N$ misurazioni $n$-dimensionali $\mathbb{x}_i = \left( x_i^{(1)}, \ldots, x_i^{(n)} \right)$ con $i \in [0, N - 1]$, sia $x^{(k)}$ il vettore delle $k$-esime componenti delle misurazioni $\mathbb{x}_i$:
+La **speranza matematica** $\mathbf{E}[X]$ di una *variabile aleatoria* discreta $X$ associata ad una *funzione di probabilità* $p_X(x)$ e ad uno *spazio campionario* $\Omega$, è definita [@intro-probability] come la somma dei valori che $X$ può assumere, ponderati per la probabilità che si manifestino:
 $$
-x^{(k)} = \left( x_0^{(k)}, \ldots, x_{N-1}^{(k)} \right)
+\mathit{E}\{X\} = \sum_{x \in \Omega} x \, p_X(x)
 $$
-e sia [@math-methods] $s_k$ la **deviazione standard** di $x^{(k)}$:
+Nel caso di una serie a valori reali $x[n]$ equiprobabili la speranza coincide con la media dei valori:
 $$
-s_k = \sqrt{\mathbb{E} \left(
-      \left( x^{(k)} - \mathbb{E} \left( x^{(k)} \right) \right)^2
-      \right)}
+\mathit{E} \left\{ x[n] \right\} = \frac{1}{N} \sum_{k=0}^{N-1} x[k]
 $$
-Si definiscono [@math-methods] quindi la **matrice di covarianza campionaria**, i cui elementi rappresentano la covarianza tra le rispettive misurazioni:
+
+La **covarianza campionaria** tra le serie $\mathbf{x}$ e $\mathbf{y}$ è definita come il valore atteso del prodotto puntuale tra gli scarti delle due serie:
 $$
-V_{kl} = \mathbb{E} \left(
-         \left( x^{(k)} - \mathbb{E} \left( x^{(k)} \right) \right)
-         \left( x^{(l)} - \mathbb{E} \left( x^{(l)} \right) \right)
-         \right)
+cov \left\{ \mathbf{x}, \mathbf{y} \right\} = \mathit{E} \left\{   
+    \left( \mathbf{x} - \mathit{E} \left\{ \mathbf{x} \right\} \right)
+    \circ
+    \left( \mathbf{y} - \mathit{E} \left\{ \mathbf{y} \right\} \right)
+\right\}
 $$
-e la **matrice di correlazione campionaria** che analogamente rappresenta la correlazione tra le misurazioni:
+dove l'operatore $\circ$ indica il *prodotto puntuale*. Si noti che la somma di uno scalare ad un vettore è da considerarsi come applicata ad ogni elemento del vettore.
+Quando le due serie coincidono, questo operatore prende il nome di **varianza**, la cui radice quadrata è la **deviazione standard** $\sigma_x$.
+
+Poiché la covarianza è influenzata da traslazioni e dilatazioni delle serie, essa viene normalizzata rispetto alle deviazioni standard delle due serie, ottenendo la **correlazione campionaria**:
 $$
-r_{kl} = \frac{V_{kl}}{s_k s_l}
+corr \left\{ \mathbf{x}, \mathbf{y} \right\} = \frac{
+    cov \left\{ \mathbf{x}, \mathbf{y} \right\}
+    }{
+    \sigma_x \sigma_y
+}
 $$
-Covarianza e correlazione sono strumenti statistici che permettono di quantificare la dipendenza da due misurazioni. La correlazione, a differenza della covarianza, è confrontabile in quanto invariante a traslazioni e dilatazioni delle misurazioni.
+
+Data una successione di $N$ misurazioni $n$-dimensionali $\mathbf{x}_i = \left[ x_i^{(1)}, \ldots, x_i^{(n)} \right]$, sia $\mathbf{x}^{(k)}$ il vettore delle $k$-esime componenti delle misurazioni $\mathbf{x}_i$
+$$
+\mathbf{x}^{(k)} = \left[ x_0^{(k)}, \ldots, x_{N-1}^{(k)} \right]
+$$
+
+Si definisce [@math-methods] quindi la **matrice di correlazione campionaria**, i cui elementi rappresentano la *correlazione* tra le rispettive misurazioni:
+$$
+\mathbf{R}_{kl} = corr \left\{
+    \mathbf{x}^{(k)}, \mathbf{x}^{(l)}
+\right\}
+$$
 
 # Stima di Armoniche e Interarmoniche
 
@@ -85,24 +98,20 @@ v_k[n+1] = v_k[n] e^{j \omega_k}
 $$
 
 ## Riduzione Dimensionale del Segnale
-Dato una sequenza di campioni $v[n]$ di lunghezza $L = N + M - 1$, si definisce il vettore dei campionamenti $\mathbb{v}[n]$ come la finestra di ampiezza $M$ da $v[n]$ a $v[n + M - 1]$.
-Il vettore $\mathbb{v}[n]$ è quindi un campionamento $M$-dimensionale del segnale.
+Dato un segnale $v[n]$ di lunghezza $L = N + M - 1$, si definisce il vettore dei campionamenti $\mathbf{v}[n]$ come la finestra di ampiezza $M$ da $v[n]$ a $v[n + M - 1]$.
+Il vettore $\mathbf{v}[n]$ è quindi un campionamento $M$-dimensionale del segnale.
 
 Isolando le componenti di segnale e di rumore, utilizzando una notazione analoga a quella del vettore dei campionamenti, si ha:
 $$
-\mathbb{v}[n] = \sum_{k=1}^K \mathbb{s}_k[n] + \mathbb{w}[n]
+\mathbf{v}[n] = \sum_{k=1}^K \mathbf{s}_k[n] + \mathbf{w}[n]
 $$
-Studiando il contributo $\mathbb{s}_k[n]$ della $k$-esima componente armonica e applicando le proprietà del modello armonico, è possibile esprimere ogni elemento $\mathbb{s}_{k,i}[n]$ in funzione di $s[n]$:
+Studiando il contributo $\mathbf{s}_k[n]$ della $k$-esima componente armonica e applicando le proprietà del modello armonico, è possibile esprimere ogni elemento $\mathbb{s}_{k,i}[n]$ in funzione di $s[n]$:
 $$
-\begin{split}
-\mathbb{s}_{k,i} &= s_k[n + i] \\
-                 &= A_k e^{j \phi_k} e^{j (n + i) \omega_k} \\
-                 &= s_k[n] e^{j i \omega_k}
-\end{split}
+\mathbf{s}_{k,i}[n] = s_k[n + i] = s_k[n] e^{j i \omega_k}
 $$
-E riscrivendo $\mathbb{s}_k[n]$ in forma matriciale si ottiene:
+E riscrivendo $\mathbf{s}_k[n]$ in forma vettoriale si ottiene:
 $$
-\mathbb{s}_k = s_k[n]
+\mathbf{s}_{k}[n] = s_k[n]
 \begin{bmatrix}
     1 \\
     e^{j \omega_k} \\
@@ -111,13 +120,13 @@ $$
 \end{bmatrix}
 $$
 
-Si costruisce [@dsp-pqd] quindi la matrice $\mathbb{V}$, di dimensioni $N \times M$, ponendo sulle righe i vettori di campionamento $\mathbb{v}[n]$
+Si costruisce [@dsp-pqd] quindi la matrice $\mathbf{V}$, di dimensioni $N \times M$, ponendo sulle righe i vettori di campionamento $\mathbf{v}[n]$
 $$
-\mathbb{V} =
+\mathbf{V} =
 \begin{bmatrix}
-    \mathbb{v}^t[0] \\
+    \mathbf{v}^t[0] \\
     \vdots \\
-    \mathbb{v}^t[N - 1]
+    \mathbf{v}^t[N - 1]
 \end{bmatrix}
 =
 \begin{bmatrix}
@@ -126,22 +135,21 @@ v[0]   & \dots  & v[M - 1] \\
 v[N - 1] & \dots & v[N + M - 2]
 \end{bmatrix}
 $$
-ottenendo quindi una sequenza di $N$ misurazioni.
+ottenendo quindi una sequenza di $N$ misurazioni $M$-dimensionali.
 
-Assumendo che il rumore $w[n]$, e di conseguenza il segnale $v[n]$, abbia media nulla, si osserva che migliore è la scelta di $M$, tale che ogni vettore di campionamento $\mathbb{v}[n]$ includa periodi interi di ogni armonica, più la media di $\mathbb{v}[n]$ tende ad annullarsi.
+Assumendo che il rumore $w[n]$, e di conseguenza il segnale $v[n]$, abbia media nulla, si osserva che migliore è la scelta di $M$, tale che ogni vettore di campionamento $\mathbf{v}[n]$ includa periodi interi di ogni armonica, più la media di $\mathbf{v}[n]$ tende ad annullarsi.
 
-Ciò comporta che la correlazione campionaria $\mathbb{R}_{kl}$ tra i vettori di campionamento $\mathbb{v}[k]$ e $\mathbb{v}[l]$ può essere approssimata da
+Ciò permette di stimare la matrice di correlazione campionaria $\mathbf{R}_{kl}$
 $$
-\hat{\mathbb{R}}_{kl} = \mathbb{E} \left(
-                        \mathbb{v}^{(k)} \, \mathbb{v}^{(l)}
-                        \right)
-                      = \frac{1}{2} \, \mathbb{v}^{(k)} \cdot \mathbb{v}^{(l)}
+\hat{\mathbf{R}}_{kl} = \mathit{E} \left\{
+    \mathbf{v}^{(k)} \circ \mathbf{v}^{(l)}
+\right\}
+  = \frac{1}{2} \, \mathbf{v}^{(k)} \cdot \mathbf{v}^{(l)}
 $$
-, dove $\mathbb{v}^{(k)}$ è la $k$-esima colonna di $\mathbb{V}$.
-
-Ne risulta quindi la seguente stima della matrice di autocorrelazione:
+, dove $\mathbf{v}^{(k)}$ è la $k$-esima colonna di $\mathbf{V}$.
+Riscrivendo l'equazione in forma matriciale si ottiene:
 $$
-\hat{\mathbb{R}} = \frac{1}{2} \, \mathbb{V}^t \, \mathbb{V}
+\hat{\mathbf{R}} = \frac{1}{2} \, \mathbf{V}^t \, \mathbf{V}
 $$
 
 \newpage
