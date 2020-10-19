@@ -101,26 +101,7 @@ $$
 Dato un segnale $v[n]$ di lunghezza $L = N + M - 1$, si definisce il vettore dei campionamenti $\mathbf{v}[n]$ come la finestra di ampiezza $M$ da $v[n]$ a $v[n + M - 1]$.
 Il vettore $\mathbf{v}[n]$ è quindi un campionamento $M$-dimensionale del segnale.
 
-Isolando le componenti di segnale e di rumore, utilizzando una notazione analoga a quella del vettore dei campionamenti, si ha:
-$$
-\mathbf{v}[n] = \sum_{k=1}^K \mathbf{s}_k[n] + \mathbf{w}[n]
-$$
-Studiando il contributo $\mathbf{s}_k[n]$ della $k$-esima componente armonica e applicando le proprietà del modello armonico, è possibile esprimere ogni elemento $\mathbb{s}_{k,i}[n]$ in funzione di $s[n]$:
-$$
-\mathbf{s}_{k,i}[n] = s_k[n + i] = s_k[n] e^{j i \omega_k}
-$$
-E riscrivendo $\mathbf{s}_k[n]$ in forma vettoriale si ottiene:
-$$
-\mathbf{s}_{k}[n] = s_k[n]
-\begin{bmatrix}
-    1 \\
-    e^{j \omega_k} \\
-    \vdots \\
-    e^{j (M-1) \omega_k}
-\end{bmatrix}
-$$
-
-Si costruisce [@dsp-pqd] quindi la matrice $\mathbf{V}$, di dimensioni $N \times M$, ponendo sulle righe i vettori di campionamento $\mathbf{v}[n]$
+Si costruisce [@dsp-pqd] la matrice $\mathbf{V}$, di dimensioni $N \times M$, ponendo sulle righe i vettori di campionamento $\mathbf{v}[n]$
 $$
 \mathbf{V} =
 \begin{bmatrix}
@@ -144,12 +125,65 @@ $$
 \hat{\mathbf{R}}_{kl} = \mathit{E} \left\{
     \mathbf{v}^{(k)} \circ \mathbf{v}^{(l)}
 \right\}
-  = \frac{1}{2} \, \mathbf{v}^{(k)} \cdot \mathbf{v}^{(l)}
+  = \frac{1}{N} \, \mathbf{v}^{(k)} \cdot \mathbf{v}^{(l)}
 $$
 , dove $\mathbf{v}^{(k)}$ è la $k$-esima colonna di $\mathbf{V}$.
 Riscrivendo l'equazione in forma matriciale si ottiene:
 $$
-\hat{\mathbf{R}} = \frac{1}{2} \, \mathbf{V}^t \, \mathbf{V}
+\hat{\mathbf{R}} = \frac{1}{N} \, \mathbf{V}^t \, \mathbf{V}
+$$
+
+## Algoritmo MUSIC
+Per il principio della sovrapposizione degli effetti la matrice di correlazione del segnale $\mathbf{R}$ può essere espressa come somma della matrici di correlazione $\mathbf{R}_s$ e $\mathbf{R}_n$ dovute rispettivamente alle componenti armoniche e al rumore.
+
+Assumendo che il rumore sia di natura gaussiana con varianza $\sigma_w^2$, la sua matrice di correlazione vale:
+$$
+\mathbf{R}_w = \sigma_w^2 I
+$$
+dove $I$ è la matrice identità di dimensione $M \times M$ e $\sigma_w^2$ coincide con la potenza del rumore.
+
+## Algoritmo ESPRIT
+
+Isolando le componenti di segnale e di rumore, utilizzando una notazione analoga a quella del vettore dei campionamenti, si ha:
+$$
+\mathbf{v}[n] = \sum_{k=1}^K \mathbf{s}_k[n] + \mathbf{w}[n]
+$$ {#eq:sig:sampleform}
+Studiando il contributo $\mathbf{s}_k[n]$ della $k$-esima componente armonica e applicando le proprietà del modello armonico, è possibile esprimere ogni elemento $\mathbf{s}_{k,i}[n]$ in funzione di $s_k[n]$:
+$$
+\mathbf{s}_{k,i}[n] = s_k[n + i] = s_k[n] e^{j i \omega_k}
+$$
+E riscrivendo $\mathbf{s}_k[n]$ in forma vettoriale si ottiene:
+$$
+\mathbf{s}_{k}[n] = s_k[n]
+\begin{bmatrix}
+    1 \\
+    e^{j \omega_k} \\
+    \vdots \\
+    e^{j (M-1) \omega_k}
+\end{bmatrix} =
+s_k[n] \, \mathbf{e}_k
+$$
+dove $\mathbf{e}_k$ è detto *vettore steering*, il quale è formato dagli sfasamenti successivi associati alla pulsazione $\omega_k$.
+
+È quindi possibile riscrivere l'equazione {@eq:sig:sampleform} come trasformazione lineare del vettore delle ampiezze complesse $\mathbf{A}$:
+$$
+\mathbf{v}[n] = \mathbf{E} \Phi^n \mathbf{A} + \mathbf{w}[n]
+$$
+dove $\mathbf{E}$ è una matrice $M \times K$ le cui $k$-esima colonna è il vettore steering associato alla pulsazione $\omega_k$
+$$
+\mathbf{E} = \left[ \mathbf{e}_1, \ldots, \mathbf{e}_K \right]
+$$
+, $\Phi$ è una matrice diagonale i cui elementi sono gli esponenziali complessi associati alle $K$ diverse pulsazioni
+$$
+\mathbf{\Phi} = diag \left\{ e^{j \omega_1}, \ldots, e^{j \omega_K} \right\}
+$$
+mentre $A$ è il vettore delle ampiezze complesse
+$$
+\mathbf{A} = \begin{bmatrix}
+    A_1 e^{j \phi_1} \\
+    \vdots \\
+    A_K e^{j \phi_K}
+\end{bmatrix}
 $$
 
 \newpage
