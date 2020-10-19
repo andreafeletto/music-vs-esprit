@@ -21,6 +21,6 @@ pdf:
 precommit:
 	jupyter nbconvert \
 		--ClearOutputPreprocessor.enabled=True \
-		--inplace *.ipynb
+		--inplace examples/*.ipynb
 
 .PHONY: all options pdf precommit

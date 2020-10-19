@@ -4,7 +4,7 @@ author: "Andrea Feletto"
 lang: "it-IT"
 toc: true
 bibliography: "thesis.bib"
-citation-style: "dsp.csl"
+citation-style: "assets/dsp.csl"
 link-citations: true
 linestretch: 1.25
 header-includes:
