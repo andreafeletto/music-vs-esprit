@@ -1,4 +1,7 @@
 
+# Usage
+The compiled dissertation is available at [build/thesis.pdf](build/thesis.pdf).
+
 # License
 The content of this project itself is licensed under the
 [Creative Commons Zero v1.0 Universal license](https://creativecommons.org/publicdomain/zero/1.0/)
