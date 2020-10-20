@@ -12,54 +12,48 @@ header-includes:
 ---
 
 \newpage
-# Richiami di Algebra Lineare e Statistica
 
-Data una trasformazione lineare $A$, il vettore non nullo $x_i$ è [@finite-dim-vecspace] **autovettore** di $A$ se e solo se esiste uno scalare $\lambda_i$, detto **autovalore** di $A$ corrispondente a $x_i$, tale che sia rispettata l'equazione:
-$$
-A x_i = \lambda_i x_i
-$$
-La trasformazione $A$, quando applicata ad un suo autovettore, ha quindi lo stesso comportamento dell'autovalore corrispondente.
+# Qualità dei Sistemi Elettrici di Potenza
 
-La **speranza matematica** $\mathbf{E}[X]$ di una *variabile aleatoria* discreta $X$ associata ad una *funzione di probabilità* $p_X(x)$ e ad uno *spazio campionario* $\Omega$, è definita [@intro-probability] come la somma dei valori che $X$ può assumere, ponderati per la probabilità che si manifestino:
-$$
-\mathit{E}\{X\} = \sum_{x \in \Omega} x \, p_X(x)
-$$
-Nel caso di una serie a valori reali $x[n]$ equiprobabili la speranza coincide con la media dei valori:
-$$
-\mathit{E} \left\{ x[n] \right\} = \frac{1}{N} \sum_{k=0}^{N-1} x[k]
-$$
+Negli anni il numero di studi operati nell'area riguardante la qualità nei
+sistemi elettrici di potenza è aumentato notevolmente [@dsp-pqd].
+Questo è dovuto a nuove fonti di energia, diverse esigenze del consumatore e
+alla liberalizzazione del settore energetico.
 
-La **covarianza campionaria** tra le serie $\mathbf{x}$ e $\mathbf{y}$ è definita come il valore atteso del prodotto puntuale tra gli scarti delle due serie:
-$$
-cov \left\{ \mathbf{x}, \mathbf{y} \right\} = \mathit{E} \left\{   
-    \left( \mathbf{x} - \mathit{E} \left\{ \mathbf{x} \right\} \right)
-    \circ
-    \left( \mathbf{y} - \mathit{E} \left\{ \mathbf{y} \right\} \right)
-\right\}
-$$
-dove l'operatore $\circ$ indica il *prodotto puntuale*. Si noti che la somma di uno scalare ad un vettore è da considerarsi come applicata ad ogni elemento del vettore.
-Quando le due serie coincidono, questo operatore prende il nome di **varianza**, la cui radice quadrata è la **deviazione standard** $\sigma_x$.
+L'avvento di nuove fonti di energia rinnovabile, come impianti solari ed eolici,
+porta con se alcune criticità dovute ai disturbi che queste generano quando
+allacciate alla rete elettrica.
+L'interconnessione alla rete elettrica di fonti di energia caratterizzate da
+una capacità produttiva variabile nel tempo è infatti causa di disturbi come
+il *voltage swell* e il *voltage dip* [@effective-power-quality]. 
+Inoltre, l'utilizzo di inverters per convertire la corrente continua generata
+dai pannelli solari e dalle turbine eoliche in corrente alternata causa
+l'inserimento di armoniche e inter-armoniche nella rete, dovute alla
+natura non lineare di questi dispositivi [@impact-inverters].
 
-Poiché la covarianza è influenzata da traslazioni e dilatazioni delle serie, essa viene normalizzata rispetto alle deviazioni standard delle due serie, ottenendo la **correlazione campionaria**:
-$$
-corr \left\{ \mathbf{x}, \mathbf{y} \right\} = \frac{
-    cov \left\{ \mathbf{x}, \mathbf{y} \right\}
-    }{
-    \sigma_x \sigma_y
-}
-$$
+Un'altra fonte di disturbi armonici e inter-armonici sono i dispositivi non
+lineari necessari al funzionamento dei dispositivi alimentati in corrente
+continua in uso al giorno d'oggi.
+In ambito civile infatti, a differenza dei contesti industriali, buona
+parte del fabbisogno energetico domestico è speso in illuminazione,
+riscaldamento, aria condizionata e dispositivi elettronici come personal
+computers e televisori [@losses-cables].
+Nell'ultimo secolo si è quindi osservato un forte peggioramento della qualità
+della rete, provocato da un uso sempre maggiore di inverters, raddrizzatori di
+tensione e motori elettrici.
 
-Data una successione di $N$ misurazioni $n$-dimensionali $\mathbf{x}_i = \left[ x_i^{(1)}, \ldots, x_i^{(n)} \right]$, sia $\mathbf{x}^{(k)}$ il vettore delle $k$-esime componenti delle misurazioni $\mathbf{x}_i$
-$$
-\mathbf{x}^{(k)} = \left[ x_0^{(k)}, \ldots, x_{N-1}^{(k)} \right]
-$$
+![Voltage dip dovuto ad un cortocircuito](assets/voltage-dip.png){#fig:swell-dip width=60%}
 
-Si definisce [@math-methods] quindi la **matrice di correlazione campionaria**, i cui elementi rappresentano la *correlazione* tra le rispettive misurazioni:
-$$
-\mathbf{R}_{kl} = corr \left\{
-    \mathbf{x}^{(k)}, \mathbf{x}^{(l)}
-\right\}
-$$
+Il *voltage swell* e il *voltage dip* sono rispettivamente un aumento e una
+riduzione del valore efficace della tensione per un lasso di tempo che può
+durare da metà del periodo dell'armonica principale fino ad 1 minuto
+[@ieee-1159].
+Il loro effetto sul segnale di una linea monofase si può osservare in
+[@fig:swell-dip].
+
+Una distorsione armonica è la presenza nel segnale di componenti armoniche
+con frequenze multiple della frequenza di rete $f_0$, mentre una distorsione
+inter-armonica è caratterizzata da frequenze che deviano da quelle armoniche.
 
 # Stima di Armoniche e Interarmoniche
 
