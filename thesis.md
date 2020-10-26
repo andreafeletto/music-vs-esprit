@@ -17,8 +17,8 @@ header-includes:
 
 Negli anni il numero di studi operati nell'area riguardante la qualità nei
 sistemi elettrici di potenza è aumentato notevolmente [@dsp-pqd].
-Questo è dovuto a nuove fonti di energia, diverse esigenze del consumatore e
-alla liberalizzazione del settore energetico.
+Questo è dovuto principalmente all'impiego di nuove fonti di energia, diverse
+esigenze del consumatore e alla liberalizzazione del settore energetico.
 
 L'avvento di nuove fonti di energia rinnovabile, come impianti solari ed eolici,
 porta con se alcune criticità dovute ai disturbi che queste generano quando
@@ -26,34 +26,204 @@ allacciate alla rete elettrica.
 L'interconnessione alla rete elettrica di fonti di energia caratterizzate da
 una capacità produttiva variabile nel tempo è infatti causa di disturbi come
 il *voltage swell* e il *voltage dip* [@effective-power-quality]. 
-Inoltre, l'utilizzo di inverters per convertire la corrente continua generata
-dai pannelli solari e dalle turbine eoliche in corrente alternata causa
-l'inserimento di armoniche e inter-armoniche nella rete, dovute alla
+
+![Esempio di *voltage swell*](assets/voltage-swell.png){#fig:swell width=60%}
+
+Lo standard *IEEE 1159* definisce questi due disturbi [@ieee-1159].
+Il *voltage swell* è un aumento del valore efficace della tensione.
+Questo evento può durare da un tempo pari alla metà del periodo dell'armonica
+principale, fino ad 1 minuto.
+In [@fig:swell] si può osservare l'effetto di questo disturbo in una
+linea monofase.
+
+![Esempio di *voltage dip*](assets/voltage-dip.png){#fig:dip width=60%}
+
+Il *voltage dip* è invece un calo di tensione compreso tra il 10% e il 90% del
+valore efficace.
+La durata, analogamente al *voltage swell* è compresa tra metà periodo e 1
+minuto.
+L'effetto in una linea monofase, dovuto ad un cortocircuito, si può osservare
+in [@fig:dip].
+
+L'utilizzo di inverters al fine di convertire la corrente continua
+generata dai pannelli solari e dalle turbine eoliche in corrente alternata,
+causa l'inserimento di armoniche e inter-armoniche nella rete, dovute alla
 natura non lineare di questi dispositivi [@impact-inverters].
 
 Un'altra fonte di disturbi armonici e inter-armonici sono i dispositivi non
-lineari necessari al funzionamento dei dispositivi alimentati in corrente
+lineari, necessari al funzionamento dei dispositivi alimentati in corrente
 continua in uso al giorno d'oggi.
 In ambito civile infatti, a differenza dei contesti industriali, buona
 parte del fabbisogno energetico domestico è speso in illuminazione,
-riscaldamento, aria condizionata e dispositivi elettronici come personal
+riscaldamento, aria condizionata e dispositivi elettronici, come personal
 computers e televisori [@losses-cables].
 Nell'ultimo secolo si è quindi osservato un forte peggioramento della qualità
 della rete, provocato da un uso sempre maggiore di inverters, raddrizzatori di
 tensione e motori elettrici.
 
-![Voltage dip dovuto ad un cortocircuito](assets/voltage-dip.png){#fig:swell-dip width=60%}
-
-Il *voltage swell* e il *voltage dip* sono rispettivamente un aumento e una
-riduzione del valore efficace della tensione per un lasso di tempo che può
-durare da metà del periodo dell'armonica principale fino ad 1 minuto
-[@ieee-1159].
-Il loro effetto sul segnale di una linea monofase si può osservare in
-[@fig:swell-dip].
-
 Una distorsione armonica è la presenza nel segnale di componenti armoniche
 con frequenze multiple della frequenza di rete $f_0$, mentre una distorsione
 inter-armonica è caratterizzata da frequenze che deviano da quelle armoniche.
+Le problematiche dovute a questi tipi di disturbo sono molteplici.
+
+Una ricerca svolta dall'*Institute of Electrical and Electronics Engineers*
+ha studiato gli effetti delle armoniche ad alta frequenza sul funzionamento
+dei trasformatori monofase. È stata individuata una proporzionalità
+tra le dissipazioni dovute a correnti parassite e il quadrato della frequenza
+dell'armonica considerata [@transformer-harmonic-loss].
+Questo significa che un buon algoritmo di stima delle armoniche deve essere
+in grado di individuare anche alte frequenze.
+Lo stesso Istituto ha svolto un ulteriore studio, il quale dimostra che le
+perdite di carico nei cavi e nei trasformatori di un impianto elettrico, dovute
+ad un'elevata presenza di armoniche, possono essere sufficientemente alte da
+giustificare modifiche all'impianto, come l'aumento della sezione dei cavi
+o l'installazione di condensatori per il rifasamento [@losses-cables].
+
+Al fine di caratterizzare l'entità dei disturbi armonici e inter-armonici
+all'interno di un segnale elettrico di potenza, risulta utile l'utilizzo
+della **Distorsione Armonica Totale**.
+$$
+THD^2 = \frac{\sum_{k=2}^{K} V_k^2}{V_1^2}
+$$
+Dove $V_1$ è la tensione di linea e $V_k$ è la tensione della $k$-esima
+armonica. Il THD è quindi la percentuale di energia presente nel segnale non
+dovuta alla componente fondamentale [@dsp-pqd].
+
+La liberalizzazione del mercato dell'energia ha delle notevoli conseguenze
+nel campo della qualità dei segnali di potenza [@power-quality-deregulation].
+La necessità di aumentare i margini di guadagno porta le compagnie operanti
+nel settore dell'energia a ridurre la manutenzione e lo sviluppo dei
+sistemi di distribuzione.
+Ciò comporta un inevitabile peggioramento della qualità.
+Inoltre, la ridotta cooperazione tra società in concorrenza tra loro impatta
+negativamente lo sviluppo di tecnologie e standards.
+
+# Algoritmi per la stima dei disturbi armonici
+
+Esistono numerosi algoritmi che permettono di stimare frequenza, ampiezza e
+fase delle componenti sinusoidali di un segnale.
+Si noti che non esiste un algoritmo adatto ad ogni contesto.
+Spesso infatti, la precisione sulle misurazioni è correlata alla complessità
+computazionale.
+
+Il primo metodo basato sullo studio della matrice di covarianza delle
+osservazioni è la *Pisarenko Harmonic Decomposition* (PHD)
+[@pisarenko-single-tone], risalente al 1973 [@pisarenko-original].
+La PHD, basandosi sull'autovalore minore della matrice di covarianza, e
+all'autovettore associato [@pisarenko-stat-analysis], permette di stimare le
+frequenza di una sinusoide addizionata a rumore bianco gaussiano:
+$$
+\hat{\omega} = cos^{-1} \left(
+    \frac{r_2 + \sqrt{r_2^2 + 8 r_1^2}}{4 r_1}
+\right)
+$$
+dove $r_k$ è la covarianza campionaria:
+$$
+r_k = \frac{1}{N - k} \sum_{n=1}^{N-k} x(n) x(n + k)
+$$
+Questo algoritmo permette la stima solamente dell'armonica principale e non è
+quindi utile nello studio dei disturbi armonici.
+
+L'algoritmo più usato è la *Fast Fourier Transform* (FFT) che permette
+di calcolare la *Discrete Fourier Transform* (DFT) ([@eq:dft]) di un segnale
+a tempo discreto di lunghezza finita $N$.
+$$
+X[k] = \sum_{n=0}^{N-1} x[n] \, e^{-j \frac{2\pi}{N}kn}
+$$ {#eq:dft}
+È un algoritmo di tipo *Divide and Conquer* ed ha quindi una complessità
+asintotica $\mathcal{O}(N\log{}N)$ [@fourier-alg-machine].
+È un algoritmo veloce e di facile implementazione, ma ha molte limitazioni.
+
+La risoluzione dello spettro generato è inversamente proporzionale alla
+lunghezza del segnale campionato
+$$
+\Delta f = \frac{1}{t_w}
+$$
+dove $t_w$ è la durata temporale del campionamento [@alg-comp-quality].
+Se il segnale contiene armoniche la cui frequenza cambia nel tempo, $t_w$
+deve essere sufficientemente piccolo da permettere una risoluzione temporale
+che consenta di osservare la variazione delle frequenze.
+Questo però implica una bassa risoluzione spettrale, la quale implica un
+notevole errore sulla stima della frequenza.
+
+La FFT soffre inoltre dell'effetto di *spectral leakage*
+[@fft-time-domain-window].
+Se la lunghezza del segnale non è tale da includere esclusivamente periodi
+interi di ogni componente sinusoidale, lo spettro presenta errori di frequenza,
+ampiezza e fase.
+Poiché non è possibile conoscere a priori la lunghezza necessaria per non
+ottenere questo effetto, ogni applicazione reale della FFT presenterà errori
+di misura dovuti al *leakage*.
+
+L'*Interpolated Fast Fourier Transform* (IFFT) è un algoritmo sviluppato al
+al fine di ottenere misurazioni precise di frequenza, ampiezza e fase da
+segnali affetti da *spectral leakage* [@ifft-comp].
+L'algoritmo è basato sull'applicazione al segnale di una funzione finestra
+opportunamente scelta [@ifft-original].
+Due funzioni finestra spesso utilizzate sono la *Hanning window*
+([@eq:hanning-window]) e la *Rife-Vincent window*.
+$$
+w[n] = sin^2 \left( \frac{\pi n}{N} \right)
+$$ {#eq:hanning-window}
+Uno studio pubblicato dalla IEEE [@ifft-comp] ha
+confrontato le prestazioni di queste due funzioni finestra.
+La *Hanning window* è risultata la scelta più adeguata per segnali con
+un basso rapporto segnale/rumore (SNR) e dei quali non si hanno informazioni
+sulle frequenze contenute.
+
+![Pseudospettro generato da MUSIC](assets/music-odd-even.png){#fig:music-odd-even width=60%}
+
+*Multiple Signal Classification* (MUSIC) è un algoritmo basato sull'analisi
+della matrice di autocorrelazione, in particolare sulla sua decomposizione
+in autovettori [@multiple-emitter-location].
+MUSIC prevede di ricavare uno pseudo-spettro ([@fig:music-odd-even]) stimando
+il sottospazio del rumore, e di ottenere le informazioni sulle frequenze dai
+massimi locali.
+Al fine di stimare la matrice di correlazione $R$, una matrice $\mathbf{V}$
+viene costruita mediante scorrimento di una finestra larga $M$ sul segnale
+campionato di lunghezza $N$.
+$$
+R = \frac{1}{N} \mathbf{V}^t \, \mathbf{V}
+$$
+
+Il metodo ESPRIT, a differenza di MUSIC, sfrutta il sottospazio del rumore
+[@dsp-pqd].
+L'algoritmo permette di individuare [@esprit-original] la matrice diagonale
+di rotazione $\Phi$, i cui elementi sono i fasori delle $K$ componenti 
+sinusoidali del segnale.
+$$
+\Phi = diag \left\{ e^{j \omega_1}, \, \ldots, \, e^{j \omega_K} \right\}
+$$
+Una matrice $\Psi$, i cui autovettori coincidono con gli elementi sulla
+diagonale di $\Phi$, viene stimata grazie alla decomposizione ai valori
+singolari (SVD) della matrice $\mathbf{V}$ usata in MUSIC.
+ESPRIT permette anche la stima del decadimento (se presente) delle sinusoidi
+modellando opportunamente i fasori:
+$$
+\Phi = diag \left\{
+    e^{-\beta_1 + j \omega_1}, \, \ldots, \, e^{- \beta_K + j \omega_K}
+\right\}
+$$
+dove $\beta_k$ è il decadimento della $k$-esima armonica.
+
+<!--
+Algoritmi:
+  - FFT
+    - Più usata
+    - Veloce
+    - Problema: leakage
+  - IFFT
+    - corregge il leakage
+  - Kalman
+-->
+
+<!--
+- Cause
+    - Arc furnace
+- Conseguenze
+- Soluzioni
+- Normative
+-->
 
 # Stima di Armoniche e Interarmoniche
 
@@ -169,7 +339,7 @@ $$
 $$
 , $\Phi$ è una matrice diagonale i cui elementi sono gli esponenziali complessi associati alle $K$ diverse pulsazioni
 $$
-\mathbf{\Phi} = diag \left\{ e^{j \omega_1}, \ldots, e^{j \omega_K} \right\}
+\Phi = diag \left\{ e^{j \omega_1}, \ldots, e^{j \omega_K} \right\}
 $$
 mentre $A$ è il vettore delle ampiezze complesse
 $$
