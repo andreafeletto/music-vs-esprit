@@ -189,8 +189,8 @@ $$
 Il metodo ESPRIT, a differenza di MUSIC, sfrutta il sottospazio del rumore
 [@dsp-pqd].
 L'algoritmo permette di individuare [@esprit-original] la matrice diagonale
-di rotazione $\Phi$, i cui elementi sono i fasori delle $K$ componenti 
-sinusoidali del segnale.
+di rotazione $\Phi$, i cui elementi sono gli esponenziali complessi le cui
+fasi sono le pulsazioni delle $K$ componenti sinusoidali del segnale.
 $$
 \Phi = diag \left\{ e^{j \omega_1}, \, \ldots, \, e^{j \omega_K} \right\}
 $$
@@ -198,13 +198,35 @@ Una matrice $\Psi$, i cui autovettori coincidono con gli elementi sulla
 diagonale di $\Phi$, viene stimata grazie alla decomposizione ai valori
 singolari (SVD) della matrice $\mathbf{V}$ usata in MUSIC.
 ESPRIT permette anche la stima del decadimento (se presente) delle sinusoidi
-modellando opportunamente i fasori:
+modellando opportunamente i gli esponenziali complessi:
 $$
 \Phi = diag \left\{
     e^{-\beta_1 + j \omega_1}, \, \ldots, \, e^{- \beta_K + j \omega_K}
 \right\}
 $$
 dove $\beta_k$ è il decadimento della $k$-esima armonica.
+
+Una possibile rappresentazione matematica del segnale è quella in spazio di
+stato. Nel caso di un segnale stazionario, questo può essere rappresentato da
+due equazioni [@dsp-pqd]:
+$$
+\begin{cases}
+\mathbf{x}[n] = A \, \mathbf{x}[n-1] + \mathbf{w}[n] \\
+\mathbf{z}[n] = C \, \mathbf{x}[n] + \mathbf{v}[n]
+\end{cases}
+$$
+dove $\mathbf{x}$ è il vettore di stato, $A$ la matrice di transizione,
+$\mathbf{w}$ il vettore del rumore, $\mathbf{z}$ il vettore delle misurazioni,
+$C$ la matrice di misurazione e $\mathbf{v}$ il vettore del rumore dovuto alla
+misurazione.
+
+Sfruttando questa rappresentazione è possibile stimare il contenuto armonico
+(e altri tipi di disturbi) applicando il filtro di Kalman.
+L'algoritmo si basa sulla minimizzazione dell'errore $\mathbf{e}$ nella stima
+del vettore di stato $\mathbf{x}$ [@state-est-kalman].
+$$
+\mathbf{e}[n] = \mathbf{x}[n] - \hat{\mathbf{x}}[n]
+$$
 
 <!--
 Algoritmi:
