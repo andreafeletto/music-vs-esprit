@@ -14,7 +14,7 @@ pdf:
 	mkdir -p $(BUILDDIR)
 	pandoc thesis.md \
 		--filter pandoc-crossref \
-		--filter pandoc-citeproc \
+		--citeproc \
 		--output $(BUILDDIR)/thesis.pdf \
 		--pdf-engine=xelatex
 

@@ -186,7 +186,7 @@ $$
 R = \frac{1}{N} \mathbf{V}^t \, \mathbf{V}
 $$
 
-Il metodo ESPRIT, a differenza di MUSIC, sfrutta il sottospazio del rumore
+Il metodo ESPRIT, a differenza di MUSIC, sfrutta il sottospazio del segnale
 [@dsp-pqd].
 L'algoritmo permette di individuare [@esprit-original] la matrice diagonale
 di rotazione $\Phi$, i cui elementi sono gli esponenziali complessi le cui
@@ -227,6 +227,15 @@ del vettore di stato $\mathbf{x}$ [@state-est-kalman].
 $$
 \mathbf{e}[n] = \mathbf{x}[n] - \hat{\mathbf{x}}[n]
 $$
+L'applicazione del filtro prevede la conoscenza a priori delle pulsazioni
+$\omega_k$ delle quali si vuole conoscere ampiezza e fase.
+Se è possibile assumere la sola presenza di armoniche, è sufficiente
+stimare un valore di $K$ sufficientemente alto da verificare l'assunzione
+che i rumori $\mathbf{w}$ e $\mathbf{v}$ siano gaussiani a media nulla.
+Nel caso di presenza di inter-armoniche non è realisticamente possibile
+assumere i valori delle pulsazioni, il che rende il filtro di Kalman inadatto
+a misurazioni di questo tipo.
+
 
 <!--
 Algoritmi:
