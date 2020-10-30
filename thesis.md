@@ -26,26 +26,11 @@ allacciate alla rete elettrica.
 L'interconnessione alla rete elettrica di fonti di energia caratterizzate da
 una capacità produttiva variabile nel tempo è infatti causa di disturbi come
 il *voltage swell* e il *voltage dip* [@effective-power-quality]. 
+Lo standard *IEEE 1159* definisce questi due disturbi [@ieee-1159]
+rispettivamente come un aumento e un calo di tensione per un tempo inferiore
+al minuto.
 
-![Esempio di *voltage swell*](assets/voltage-swell.png){#fig:swell width=60%}
-
-Lo standard *IEEE 1159* definisce questi due disturbi [@ieee-1159].
-Il *voltage swell* è un aumento del valore efficace della tensione.
-Questo evento può durare da un tempo pari alla metà del periodo dell'armonica
-principale, fino ad 1 minuto.
-In [@fig:swell] si può osservare l'effetto di questo disturbo in una
-linea monofase.
-
-![Esempio di *voltage dip*](assets/voltage-dip.png){#fig:dip width=60%}
-
-Il *voltage dip* è invece un calo di tensione compreso tra il 10% e il 90% del
-valore efficace.
-La durata, analogamente al *voltage swell* è compresa tra metà periodo e 1
-minuto.
-L'effetto in una linea monofase, dovuto ad un cortocircuito, si può osservare
-in [@fig:dip].
-
-L'utilizzo di inverters al fine di convertire la corrente continua
+L'utilizzo di inverters, al fine di convertire la corrente continua
 generata dai pannelli solari e dalle turbine eoliche in corrente alternata,
 causa l'inserimento di armoniche e inter-armoniche nella rete, dovute alla
 natura non lineare di questi dispositivi [@impact-inverters].
@@ -72,7 +57,8 @@ dei trasformatori monofase. È stata individuata una proporzionalità
 tra le dissipazioni dovute a correnti parassite e il quadrato della frequenza
 dell'armonica considerata [@transformer-harmonic-loss].
 Questo significa che un buon algoritmo di stima delle armoniche deve essere
-in grado di individuare anche alte frequenze.
+in grado di individuare anche le frequenze più alte, in quanto queste sono
+responsabili per la maggior parte delle dissipazioni di questo tipo.
 Lo stesso Istituto ha svolto un ulteriore studio, il quale dimostra che le
 perdite di carico nei cavi e nei trasformatori di un impianto elettrico, dovute
 ad un'elevata presenza di armoniche, possono essere sufficientemente alte da
@@ -80,14 +66,20 @@ giustificare modifiche all'impianto, come l'aumento della sezione dei cavi
 o l'installazione di condensatori per il rifasamento [@losses-cables].
 
 Al fine di caratterizzare l'entità dei disturbi armonici e inter-armonici
-all'interno di un segnale elettrico di potenza, risulta utile l'utilizzo
-della **Distorsione Armonica Totale**.
+all'interno di un segnale elettrico di potenza, risulta utile il concetto di
+**Distorsione Armonica Totale**, la quale, note le componenti del segnale,
+si può calcolare come segue:
 $$
 THD^2 = \frac{\sum_{k=2}^{K} V_k^2}{V_1^2}
 $$
 Dove $V_1$ è la tensione di linea e $V_k$ è la tensione della $k$-esima
 armonica. Il THD è quindi la percentuale di energia presente nel segnale non
 dovuta alla componente fondamentale [@dsp-pqd].
+
+È importante precisare che i disturbi di tensione sono prodotti dal generatore,
+mentre i disturbi di corrente sono causati dagli utilizzatori.
+Tuttavia, se questi ultimi non vengono opportunamente compensati, una volta
+raggiunta la sorgente provocano ulteriori disturbi di tensione.
 
 La liberalizzazione del mercato dell'energia ha delle notevoli conseguenze
 nel campo della qualità dei segnali di potenza [@power-quality-deregulation].
@@ -106,9 +98,9 @@ Si noti che non esiste un algoritmo adatto ad ogni contesto.
 Spesso infatti, la precisione sulle misurazioni è correlata alla complessità
 computazionale.
 
-Il primo metodo basato sullo studio della matrice di covarianza delle
-osservazioni è la *Pisarenko Harmonic Decomposition* (PHD)
-[@pisarenko-single-tone], risalente al 1973 [@pisarenko-original].
+Il primo metodo basato sullo studio della matrice di covarianza è la
+*Pisarenko Harmonic Decomposition* (PHD) [@pisarenko-single-tone], risalente
+al 1973 [@pisarenko-original].
 La PHD, basandosi sull'autovalore minore della matrice di covarianza, e
 all'autovettore associato [@pisarenko-stat-analysis], permette di stimare le
 frequenza di una sinusoide addizionata a rumore bianco gaussiano:
@@ -135,11 +127,11 @@ asintotica $\mathcal{O}(N\log{}N)$ [@fourier-alg-machine].
 È un algoritmo veloce e di facile implementazione, ma ha molte limitazioni.
 
 La risoluzione dello spettro generato è inversamente proporzionale alla
-lunghezza del segnale campionato
+lunghezza del segnale campionato [@alg-comp-quality]
 $$
 \Delta f = \frac{1}{t_w}
 $$
-dove $t_w$ è la durata temporale del campionamento [@alg-comp-quality].
+dove $t_w$ è la durata temporale del campionamento.
 Se il segnale contiene armoniche la cui frequenza cambia nel tempo, $t_w$
 deve essere sufficientemente piccolo da permettere una risoluzione temporale
 che consenta di osservare la variazione delle frequenze.
@@ -165,11 +157,16 @@ Due funzioni finestra spesso utilizzate sono la *Hanning window*
 $$
 w[n] = sin^2 \left( \frac{\pi n}{N} \right)
 $$ {#eq:hanning-window}
-Uno studio pubblicato dalla IEEE [@ifft-comp] ha
-confrontato le prestazioni di queste due funzioni finestra.
+Uno studio pubblicato dalla IEEE [@ifft-comp] ha confrontato le prestazioni di
+queste due funzioni finestra.
 La *Hanning window* è risultata la scelta più adeguata per segnali con
 un basso rapporto segnale/rumore (SNR) e dei quali non si hanno informazioni
 sulle frequenze contenute.
+
+Questo algoritmo è poco adatto all'analisi di segnali contenenti armoniche
+o inter-armoniche vicine alla frequenza di rete e con ampiezza simile.
+Queste possono infatti distorcere l'interpolazione dello spettro risultante
+[@alg-comp-quality].
 
 ![Pseudospettro generato da MUSIC](assets/music-odd-even.png){#fig:music-odd-even width=60%}
 
@@ -180,17 +177,32 @@ MUSIC prevede di ricavare uno pseudo-spettro ([@fig:music-odd-even]) stimando
 il sottospazio del rumore, e di ottenere le informazioni sulle frequenze dai
 massimi locali.
 Al fine di stimare la matrice di correlazione $R$, una matrice $\mathbf{V}$
-viene costruita mediante scorrimento di una finestra larga $M$ sul segnale
-campionato di lunghezza $N$.
+viene costruita mediante scorrimento di una finestra rettangolare larga $M$
+sul segnale campionato di lunghezza $N$.
 $$
 R = \frac{1}{N} \mathbf{V}^t \, \mathbf{V}
 $$
+La scelta di $M$ influenza la precisione della misurazione.
+In particolare $M$ deve essere tale da far sì che una finestra includa
+solamente periodi interi della componente principale [@sliding-window-esprit].
+
+Gli autovettori $\mathbf{s}_i$ della matrice di autocorrelazione $R$ formano
+il sottospazio del segnale e il sottospazio del rumore.
+Quest'ultimo è formato dagli autovettori associati agli $M - K$ autovalori
+minori.
+Le frequenze sono quindi stimate individuando i picchi dello pseudo-spettro
+dato dal sottospazio del rumore:
+$$
+P_{music} \left( e^{j \omega} \right) =
+\frac{1}{\sum_{i=K+1}^{M} \left| \mathbf{e}^H \mathbf{s}_i  \right|^2}
+$$
+dove $\mathbf{e}^H$ è il vettore di *steering* trasposto e coniugato.
 
 Il metodo ESPRIT, a differenza di MUSIC, sfrutta il sottospazio del segnale
 [@dsp-pqd].
-L'algoritmo permette di individuare [@esprit-original] la matrice diagonale
-di rotazione $\Phi$, i cui elementi sono gli esponenziali complessi le cui
-fasi sono le pulsazioni delle $K$ componenti sinusoidali del segnale.
+L'algoritmo permette di individuare la matrice diagonale di rotazione $\Phi$
+[@esprit-original], i cui elementi sono gli esponenziali complessi di fase
+pari alle pulsazioni delle $K$ componenti sinusoidali del segnale.
 $$
 \Phi = diag \left\{ e^{j \omega_1}, \, \ldots, \, e^{j \omega_K} \right\}
 $$
@@ -206,7 +218,14 @@ $$
 $$
 dove $\beta_k$ è il decadimento della $k$-esima armonica.
 
-Una possibile rappresentazione matematica del segnale è quella in spazio di
+Spesso la componente principale del segnale ha un'ampiezza uno o due ordini
+di grandezza superiore a quella delle componenti armoniche.
+In questi casi è quindi necessario applicare un filtro passa-alto al segnale
+prima di stimarne i disturbi armonici.
+La sproporzione nel contenuto energetico comporta infatti un aumento
+dell'errore di stima [@dsp-pqd].
+
+Una diversa rappresentazione matematica del segnale è quella in spazio di
 stato. Nel caso di un segnale stazionario, questo può essere rappresentato da
 due equazioni [@dsp-pqd]:
 $$
