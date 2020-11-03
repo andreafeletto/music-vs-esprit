@@ -1,26 +1,24 @@
 
 .POSIX:
 
-BUILDDIR=./build
+all: thesis.pdf
 
-all: options pdf
-
-options:
-	@echo thesis build options:
-	@echo "BUILDDIR = $(BUILDDIR)"
-	@echo
-
-pdf:
-	mkdir -p $(BUILDDIR)
+thesis.pdf:
+	mkdir -p build
 	pandoc thesis.md \
+		--variable citation-style=assets/dsp.csl \
+		--include-in-header assets/head.tex \
+		--include-before-body assets/firstpage.tex \
+		--listings \
 		--filter pandoc-crossref \
 		--citeproc \
-		--output $(BUILDDIR)/thesis.pdf \
-		--pdf-engine=xelatex
+		--pdf-engine=xelatex \
+		--output build/thesis.pdf
 
 precommit:
 	jupyter nbconvert \
 		--ClearOutputPreprocessor.enabled=True \
 		--inplace examples/*.ipynb
 
-.PHONY: all options pdf precommit
+clean:
+	rm -rf ./build

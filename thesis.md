@@ -1,14 +1,9 @@
 ---
-title: "MUSIC vs ESPRIT"
-author: "Andrea Feletto"
 lang: "it-IT"
 toc: true
 bibliography: "thesis.bib"
-citation-style: "assets/dsp.csl"
 link-citations: true
 linestretch: 1.25
-header-includes:
-    - \usepackage{siunitx}
 ---
 
 \newpage
@@ -255,67 +250,64 @@ Nel caso di presenza di inter-armoniche non è realisticamente possibile
 assumere i valori delle pulsazioni, il che rende il filtro di Kalman inadatto
 a misurazioni di questo tipo.
 
-
-<!--
-Algoritmi:
-  - FFT
-    - Più usata
-    - Veloce
-    - Problema: leakage
-  - IFFT
-    - corregge il leakage
-  - Kalman
--->
-
-<!--
-- Cause
-    - Arc furnace
-- Conseguenze
-- Soluzioni
-- Normative
--->
-
 # Stima di Armoniche e Interarmoniche
 
 ## Modello Sinusoidale
-Ogni segnale a tempo discreto $v[n]$ ottenuto da una rete elettrica può essere espresso come la sovrapposizione di $K$ componenti sinusoidali, più una componente di rumore.
+Ogni segnale a tempo discreto $v[n]$ ottenuto da una rete elettrica può essere
+espresso come la sovrapposizione di $K$ componenti sinusoidali, più una
+componente di rumore.
 $$
 v[n] = s[n] + w[n] = \sum_{k=1}^K s_k[n] + w[n]
 $$
-Le componenti sinusoidali sono caratterizzate dall'ampiezza $a_k \geq 0$, dalla fase $\phi_k \in [-\pi, \pi]$ e dalla pulsazione $\omega_k$.
+Le componenti sinusoidali sono caratterizzate dall'ampiezza $a_k \geq 0$, dalla
+fase $\phi_k \in [-\pi, \pi]$ e dalla pulsazione $\omega_k$.
 $$
 s_k[n] = a_k \, cos \left( n \omega_k + \phi_k \right)
 $$
-Le componenti $s_k[n]$ sono chiamate **armoniche** quando la loro pulsazione è un multiplo della pulsazione fondamentale $\omega_0$, altrimenti sono dette **interarmoniche**.
+Le componenti $s_k[n]$ sono chiamate **armoniche** quando la loro pulsazione è
+un multiplo della pulsazione fondamentale $\omega_0$, altrimenti sono dette
+**interarmoniche**.
 
 La $\tilde{k}$-esima armonica ha pulsazione $\omega_k = 2 \tilde{k} \pi f_0$.
-Si noti che le frequenze sono normalizzate rispetto alla frequenza di campionamento secondo la relazione $f_k = \tilde{f_k} / f_s$, dove $\tilde{f_k}$ è la frequenza in $\si{\hertz}$ e $f_s$ è la frequenza di campionamento.
+Si noti che le frequenze sono normalizzate rispetto alla frequenza di
+campionamento secondo la relazione $f_k = \tilde{f_k} / f_s$, dove $\tilde{f_k}$
+è la frequenza in $\si{\hertz}$ e $f_s$ è la frequenza di campionamento.
 Pertanto, se viene rispettato il Teorema del Campionamento di Nyquist-Shannon:
 $$
 f_c > 2 \, max\{f_k\}
 $$
 ne deriva che $\omega_k \in \left[ -\pi, \pi \right]$.
 
-La $0$-esima armonica, avendo pulsazione nulla, è detta componente di corrente continua e il suo valore di tensione è $V_{DC} = a_0 \, cos(\phi_0)$.
-L'armonica fondamentale è detta invece componente di potenza ed ha pulsazione $\omega_0 = \tau \tilde{f}_0 / f_c$ e ampiezza $a_0 = \sqrt{2} \, V_{rms}$, dove $\tilde{f}_0$ è la frequenza della rete e $V_{rms}$ è la tensione efficace di fase.
+La $0$-esima armonica, avendo pulsazione nulla, è detta componente di corrente
+continua e il suo valore di tensione è $V_{DC} = a_0 \, cos(\phi_0)$.
+L'armonica fondamentale è detta invece componente di potenza ed ha pulsazione
+$\omega_0 = \tau \tilde{f}_0 / f_c$ e ampiezza $a_0 = \sqrt{2} \, V_{rms}$, dove
+$\tilde{f}_0$ è la frequenza della rete e $V_{rms}$ è la tensione efficace di
+fase.
 
 ## Modello Armonico
-Il segnale $v[n]$ può essere espresso anche sotto forma di esponenziali complessi. La $k$-esima componente ha quindi la seguente forma:
+Il segnale $v[n]$ può essere espresso anche sotto forma di esponenziali
+complessi. La $k$-esima componente ha quindi la seguente forma:
 $$
 v_k[n] = A_k e^{j \phi_k} e^{j n \omega_k}
 $$
 
-Due campioni successivi della componente $v_k[n]$ sono legati da uno sfasamento pari alla sua pulsazione $\omega_k$.
+Due campioni successivi della componente $v_k[n]$ sono legati da uno sfasamento
+pari alla sua pulsazione $\omega_k$.
 $$
 v_k[n+1] = v_k[n] e^{j \omega_k}
          = A_k e^{j \phi_k} e^{j (n+1) \omega_k}
 $$
 
 ## Riduzione Dimensionale del Segnale
-Dato un segnale $v[n]$ di lunghezza $L = N + M - 1$, si definisce il vettore dei campionamenti $\mathbf{v}[n]$ come la finestra di ampiezza $M$ da $v[n]$ a $v[n + M - 1]$.
-Il vettore $\mathbf{v}[n]$ è quindi un campionamento $M$-dimensionale del segnale.
+Dato un segnale $v[n]$ di lunghezza $L = N + M - 1$, si definisce il vettore dei
+campionamenti $\mathbf{v}[n]$ come la finestra di ampiezza $M$ da $v[n]$ a
+$v[n + M - 1]$.
+Il vettore $\mathbf{v}[n]$ è quindi un campionamento $M$-dimensionale del
+segnale.
 
-Si costruisce [@dsp-pqd] la matrice $\mathbf{V}$, di dimensioni $N \times M$, ponendo sulle righe i vettori di campionamento $\mathbf{v}[n]$
+Si costruisce [@dsp-pqd] la matrice $\mathbf{V}$, di dimensioni $N \times M$,
+ponendo sulle righe i vettori di campionamento $\mathbf{v}[n]$
 $$
 \mathbf{V} =
 \begin{bmatrix}
@@ -332,7 +324,10 @@ v[N - 1] & \dots & v[N + M - 2]
 $$
 ottenendo quindi una sequenza di $N$ misurazioni $M$-dimensionali.
 
-Assumendo che il rumore $w[n]$, e di conseguenza il segnale $v[n]$, abbia media nulla, si osserva che migliore è la scelta di $M$, tale che ogni vettore di campionamento $\mathbf{v}[n]$ includa periodi interi di ogni armonica, più la media di $\mathbf{v}[n]$ tende ad annullarsi.
+Assumendo che il rumore $w[n]$, e di conseguenza il segnale $v[n]$, abbia media
+nulla, si osserva che migliore è la scelta di $M$, tale che ogni vettore di
+campionamento $\mathbf{v}[n]$ includa periodi interi di ogni armonica, più la
+media di $\mathbf{v}[n]$ tende ad annullarsi.
 
 Ciò permette di stimare la matrice di correlazione campionaria $\mathbf{R}_{kl}$
 $$
@@ -348,21 +343,29 @@ $$
 $$
 
 ## Algoritmo MUSIC
-Per il principio della sovrapposizione degli effetti la matrice di correlazione del segnale $\mathbf{R}$ può essere espressa come somma della matrici di correlazione $\mathbf{R}_s$ e $\mathbf{R}_n$ dovute rispettivamente alle componenti armoniche e al rumore.
+Per il principio della sovrapposizione degli effetti la matrice di correlazione
+del segnale $\mathbf{R}$ può essere espressa come somma della matrici di
+correlazione $\mathbf{R}_s$ e $\mathbf{R}_n$ dovute rispettivamente alle
+componenti armoniche e al rumore.
 
-Assumendo che il rumore sia di natura gaussiana con varianza $\sigma_w^2$, la sua matrice di correlazione vale:
+Assumendo che il rumore sia di natura gaussiana con varianza $\sigma_w^2$, la
+sua matrice di correlazione vale:
 $$
 \mathbf{R}_w = \sigma_w^2 I
 $$
-dove $I$ è la matrice identità di dimensione $M \times M$ e $\sigma_w^2$ coincide con la potenza del rumore.
+dove $I$ è la matrice identità di dimensione $M \times M$ e $\sigma_w^2$
+coincide con la potenza del rumore.
 
 ## Algoritmo ESPRIT
 
-Isolando le componenti di segnale e di rumore, utilizzando una notazione analoga a quella del vettore dei campionamenti, si ha:
+Isolando le componenti di segnale e di rumore, utilizzando una notazione
+analoga a quella del vettore dei campionamenti, si ha:
 $$
 \mathbf{v}[n] = \sum_{k=1}^K \mathbf{s}_k[n] + \mathbf{w}[n]
 $$ {#eq:sig:sampleform}
-Studiando il contributo $\mathbf{s}_k[n]$ della $k$-esima componente armonica e applicando le proprietà del modello armonico, è possibile esprimere ogni elemento $\mathbf{s}_{k,i}[n]$ in funzione di $s_k[n]$:
+Studiando il contributo $\mathbf{s}_k[n]$ della $k$-esima componente armonica
+e applicando le proprietà del modello armonico, è possibile esprimere ogni
+elemento $\mathbf{s}_{k,i}[n]$ in funzione di $s_k[n]$:
 $$
 \mathbf{s}_{k,i}[n] = s_k[n + i] = s_k[n] e^{j i \omega_k}
 $$
@@ -377,17 +380,21 @@ $$
 \end{bmatrix} =
 s_k[n] \, \mathbf{e}_k
 $$
-dove $\mathbf{e}_k$ è detto *vettore steering*, il quale è formato dagli sfasamenti successivi associati alla pulsazione $\omega_k$.
+dove $\mathbf{e}_k$ è detto *vettore steering*, il quale è formato dagli
+sfasamenti successivi associati alla pulsazione $\omega_k$.
 
-È quindi possibile riscrivere l'equazione {@eq:sig:sampleform} come trasformazione lineare del vettore delle ampiezze complesse $\mathbf{A}$:
+È quindi possibile riscrivere l'equazione {@eq:sig:sampleform} come
+trasformazione lineare del vettore delle ampiezze complesse $\mathbf{A}$:
 $$
 \mathbf{v}[n] = \mathbf{E} \Phi^n \mathbf{A} + \mathbf{w}[n]
 $$
-dove $\mathbf{E}$ è una matrice $M \times K$ le cui $k$-esima colonna è il vettore steering associato alla pulsazione $\omega_k$
+dove $\mathbf{E}$ è una matrice $M \times K$ le cui $k$-esima colonna è il
+vettore steering associato alla pulsazione $\omega_k$
 $$
 \mathbf{E} = \left[ \mathbf{e}_1, \ldots, \mathbf{e}_K \right]
 $$
-, $\Phi$ è una matrice diagonale i cui elementi sono gli esponenziali complessi associati alle $K$ diverse pulsazioni
+, $\Phi$ è una matrice diagonale i cui elementi sono gli esponenziali complessi
+associati alle $K$ diverse pulsazioni
 $$
 \Phi = diag \left\{ e^{j \omega_1}, \ldots, e^{j \omega_K} \right\}
 $$
@@ -399,6 +406,210 @@ $$
     A_K e^{j \phi_K}
 \end{bmatrix}
 $$
+
+# Implementazione in Python
+
+Diverse librerie sono state utilizzate per l'implementazione e la
+visualizzazione degli algoritmi MUSIC e ESPRIT.
+La lettura e la memorizzazione di dati tabulari è gestita da *pandas*.
+*numpy* permentte invece la memorizzazione di array contigui in memoria,
+garantendo ottime prestazioni di calcolo nonostante il livello di astrazione.
+Le routines per i calcoli di algebra lineare e per la localizzazione di massimi
+locali sono formite dalla libreria *scipy*.
+Per la visualizzazione è stata usata *matplotlib*.
+
+Per garantire la riproducibilità delle stime, il generatore di numeri
+pseudo-casuali incluso in *numpy* è stato inizializzato con un seme scelto
+arbitrariamente.
+
+```python
+from math import tau
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy as sp
+import scipy.linalg as LA
+import scipy.signal as ss
+
+from utils import *
+
+plt.style.use('seaborn-notebook')
+np.random.seed(293710966)
+```
+
+Come primo esempio si sceglie un segnale contenente solo le prime 6 armoniche
+dispari della frequenza di rete $f_0 = \SI{50}{\hertz}$.
+Il segnale viene campionato a $f_c = \SI{2400}{\hertz}$ consentendo la stima di
+armoniche fino a $\SI{1200}{\hertz}$.
+La frequenza di campionamento scelta è sufficiente poiché l'armonica più alta
+ha frequenza $f_{13} = \SI{650}{\hertz}$.
+$$
+x(n) = \sum_{k=2}^7 a_{2k-1} \, cos \left(2 \pi n (2k-1)
+       \frac{f_0}{f_s} + \phi_{2k-1} \right) + w(n)
+$$
+
+Il campionamento inizia al tempo $t_0 = 0$ e termina una volta raccolti
+$2^{12}$ campioni.
+I campionamenti sono memorizzati come *IEEE 754 double-precision floating-point
+numbers* i quali occupano $\SI{64}{\bit}$ di memoria.
+La memorizzazione del segnale richiede quindi $\SI{32}{\kibi\byte}$ di memoria.
+
+```python
+magnitudes = pd.read_csv('./harmonic-voltage-magnitude.csv',
+    index_col='number')['typical']
+phases = np.radians(pd.read_csv('./phases.csv',
+    index_col='number'))['3.8']
+
+power_freq = 50
+sampling_freq = 2400
+harmonic_numbers = np.arange(3, 14, 2)
+no_of_harmonics = harmonic_numbers.max()
+
+time = np.arange(4096.)
+
+noise = np.random.normal(0, 0.1, time.size)
+signal = noise.copy()
+
+for n in harmonic_numbers:
+    amp = magnitudes[n]
+    phase = phases[n]
+    omega = tau * n * power_freq / sampling_freq
+    signal += amp * np.cos(omega * time + phase)
+```
+
+Al fine di scegliere opportunamente la larghezza della finestra di
+campionamento, si calcola la lunghezza del periodo $T_0$ della frequenza di
+rete.
+$$
+T_0 = \frac{f_s}{f_0}
+$$
+La larghezza $M$ della finestra viene quindi calcolata pari a $10$ volte il
+periodo $T_0$
+
+```python
+power_period = np.around(sampling_freq / power_freq).astype(int)
+time_window = power_period * 10
+data_size = signal.size - time_window + 1
+
+windows = [signal[i : i + time_window] for i in range(data_size)]
+data_matrix = np.vstack(windows)
+```
+Poiché la matrice di autocorrelazione stimata $\hat{R}$ è reale simmetrica, gli
+autovettori e autovalori vengono calcolati con un algoritmo fornito da *scipy*
+in grado di sfruttare questa proprietà.
+$$
+\hat{R} = \frac{1}{N} \mathbf{V}^t \mathbf{V}
+$$
+
+```python
+correlation = data_matrix.conj().T @ data_matrix / data_matrix.shape[0]
+
+signal_space_index = (time_window - no_of_harmonics, time_window - 1)
+noise_space_index = (0, time_window - no_of_harmonics - 1)
+
+signal_pca = LA.eigh(correlation, subset_by_index=signal_space_index)
+noise_pca = LA.eigh(correlation, subset_by_index=noise_space_index)
+
+signal_eigvecs = signal_pca[1].T
+noise_eigvecs = noise_pca[1].T
+```
+
+L'algoritmo MUSIC fornisce l'equazione dello pseudo-spettro in funzione della
+pulsazione normalizzata. L'intervallo in cui ha senso valutare lo spettro
+è $\omega \in \left[ 0, \pi \right]$, in accordo con la teoria di
+Nyquist-Shannon.
+
+A differenza della DFT, la risoluzione spettrale può essere scelta arbitrariamente.
+Bisogna però tenere in considerazione che una bassa risoluzione
+comporta un'errore sulla stima della frequenza, mentre un'alta risoluzione
+richiede maggior tempo di calcolo.
+In questo caso si è scelta una risoluzione $\Delta f = \SI{1}{\hertz}$.
+
+```python
+omegas = np.linspace(0, np.pi, sampling_freq // 2)
+freqs = omegas * sampling_freq / tau
+```
+
+Viene definita la matrice di *steering*, le cui righe sono i vettori di
+*steering* calcolati per ogni pulsazione $\omega$ dello pseudo-spettro
+$$
+\mathbf{E}_{k} = \mathbf{e}_k^t
+$$
+dove $\mathbf{e}_k$ è il vettore di *steering* con pulsazione
+$\omega = k \Delta\omega$.
+
+```python
+steering_matrix = np.exp(1j * np.outer(omegas, np.arange(time_window)))
+pseudo_power = 1 / np.sum(
+    np.abs(noise_eigvecs @ steering_matrix.conj().T) ** 2,
+    axis=0
+)
+```
+
+I massimi locali dello pseudo-spettro vengono individuati grazie alla
+routine *find_peaks* fornita da *scipy*.
+I dati ricavati vengono memorizzati in un *DataFrame* gestito dalla libreria
+*pandas* in modo da poter estrarre i $K$ picchi di maggior potenza.
+
+```python
+peaks_idx, _ = ss.find_peaks(pseudo_power)
+
+peaks = pd.DataFrame()
+peaks['omega'] = omegas[peaks_idx]
+peaks['freq'] = freqs[peaks_idx]
+peaks['power'] = pseudo_power[peaks_idx]
+peaks = peaks.sort_values('power').tail(harmonic_numbers.size).sort_values('omega')
+
+est_freqs = peaks.freq.values
+est_omegas = peaks.omega.values
+real_freqs = power_freq * harmonic_numbers
+err_freqs = (est_freqs - real_freqs) / real_freqs
+```
+
+Le ampiezze vengono stimate utilizzando gli autovettori appartenenti al
+sottospazio del segnale.
+Poiché la dimensione del sottospazio del segnale è maggiore del numero di
+frequenze stimate, si usano gli autovettori ordinatamente associati ai numeri
+armonici delle frequenze stimate.
+
+```python
+est_steering_matrix = np.exp(1j * np.outer(est_omegas, np.arange(time_window)))
+est_noise_power = noise_pca[0].mean()
+
+b = signal_pca[0][harmonic_numbers - 1] - est_noise_power
+A = np.abs(
+    signal_eigvecs[harmonic_numbers - 1] @ est_steering_matrix.conj().T
+) ** 2
+
+est_powers = LA.solve(A, b)
+
+est_amplitudes = np.sqrt(2 * est_powers)
+real_amplitudes = magnitudes[harmonic_numbers].values
+err_amplitudes = (est_amplitudes - real_amplitudes) / real_amplitudes
+```
+
+Nella seguente tabella sono presentati i risultati delle stime di frequenza e
+ampiezza.
+
+\begin{center}
+\begin{tabular}{lcccccc}
+    \toprule
+    &
+    \multicolumn{3}{c}{Frequenza [\si{\hertz}]} &
+    \multicolumn{3}{c}{Ampiezza [\si{\volt}]} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+    k  & Reale & Stimata & Errore & Reale & Stimata & Errore \\
+    \midrule
+    3  & 150 & 150.13 & 0.08 \% & 1.5 & 1.498 & 0.11 \% \\
+    5  & 250 & 250.21 & 0.08 \% & 4.0 & 4.025 & 0.63 \% \\
+    7  & 350 & 350.29 & 0.08 \% & 4.0 & 4.012 & 0.31 \% \\
+    9  & 450 & 450.38 & 0.08 \% & 0.8 & 0.804 & 0.53 \% \\
+    11 & 550 & 550.46 & 0.08 \% & 2.5 & 2.533 & 1.33 \% \\
+    13 & 650 & 649.54 & 0.07 \% & 2.0 & 2.025 & 1.26 \% \\
+    \bottomrule
+\end{tabular}
+\end{center}
 
 \newpage
 # Riferimenti
